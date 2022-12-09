@@ -1,18 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Sidebar from "./components/Sidebar";
 import Main from "./components/Main";
 import uuid from "react-uuid";
 
 function App() {
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState(
+    JSON.parse(localStorage.getItem("notes")) || []
+  );
   const [activeNote, setActiveNote] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }, [notes]);
+
+  useEffect(() => {
+    setActiveNote(notes[0].id);
+  }, []);
 
   const onAddNote = () => {
     const newNote = {
       id: uuid(),
-      title: "sss",
-      content: "aaa",
+      title: "New Note",
+      content: "Your content",
       modDate: Date.now(),
     };
 
@@ -24,6 +34,22 @@ function App() {
     setNotes(filterNotes);
   };
 
+  const getActiveNote = () => {
+    return notes.find((note) => note.id === activeNote);
+  };
+
+  const onUpdateNote = (updatedNote) => {
+    const updatedNotesArray = notes.map((note) => {
+      if (note.id === updatedNote.id) {
+        return updatedNote;
+      } else {
+        return note;
+      }
+    });
+
+    setNotes(updatedNotesArray);
+  };
+
   return (
     <div className="App">
       <Sidebar
@@ -33,7 +59,7 @@ function App() {
         notes={notes}
         activeNote={activeNote}
       />
-      <Main />
+      <Main activeNote={getActiveNote()} onUpdateNote={onUpdateNote} />
     </div>
   );
 }
